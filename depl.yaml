@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airquality
+  labels:
+    role: airquality
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      role: airquality
+  template:
+    metadata:
+      labels:
+        role: airquality
+    spec:
+      containers:
+        - name: airquality
+          image: repository.avsystem.com/docker-local/airquality
+          imagePullPolicy: Always
+          env:
+            - name: DEVICEID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SERVER_ADDRESS
+              value: "cdm-testmaster.avsystem.com"

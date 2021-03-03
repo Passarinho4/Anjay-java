@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airquality1
+  labels:
+    role: airquality
+spec:
+  containers:
+    - name: airquality
+      image: repository.avsystem.com/docker-local/airquality
+      imagePullPolicy: Always
+      env:
+        - name: DEVICEID
+          value: "airquality1"
+        - name: SERVER_ADDRESS
+          value: "cdm-testmaster.avsystem.com"
+
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airquality2
+  labels:
+    role: airquality
+spec:
+  containers:
+    - name: airquality
+      image: repository.avsystem.com/docker-local/airquality
+      imagePullPolicy: Always
+      env:
+        - name: DEVICEID
+          value: "airquality2"
+        - name: SERVER_ADDRESS
+          value: "cdm-testmaster.avsystem.com"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airquality3
+  labels:
+    role: airquality
+spec:
+  containers:
+    - name: airquality
+      image: repository.avsystem.com/docker-local/airquality
+      imagePullPolicy: Always
+      env:
+        - name: DEVICEID
+          value: "airquality3"
+        - name: SERVER_ADDRESS
+          value: "cdm-testmaster.avsystem.com"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airquality4
+  labels:
+    role: airquality
+spec:
+  containers:
+    - name: airquality
+      image: repository.avsystem.com/docker-local/airquality
+      imagePullPolicy: Always
+      env:
+        - name: DEVICEID
+          value: "airquality4"
+        - name: SERVER_ADDRESS
+          value: "cdm-testmaster.avsystem.com"

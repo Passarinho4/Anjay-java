@@ -28,6 +28,9 @@ import com.avsystem.anjay.AnjaySecurityConfig;
 import com.avsystem.anjay.AnjaySecurityInfoCert;
 import com.avsystem.anjay.AnjaySecurityObject;
 import com.avsystem.anjay.AnjayServerObject;
+import com.avsystem.anjay.demo.resources.AirQuality;
+import com.avsystem.anjay.demo.resources.Temperature;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,10 +45,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.time.Duration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -190,7 +193,7 @@ public final class DemoClient implements Runnable {
 
         if (this.args.attributeStoragePersistenceFile != null) {
             try (FileInputStream restoreStream =
-                    new FileInputStream(this.args.attributeStoragePersistenceFile)) {
+                         new FileInputStream(this.args.attributeStoragePersistenceFile)) {
                 this.attrStorage.restore(restoreStream);
             } catch (Exception e) {
                 Logger.getAnonymousLogger()
@@ -204,7 +207,7 @@ public final class DemoClient implements Runnable {
         if (this.args.dmPersistenceFile != null
                 && (this.securityObject.isModified() || this.serverObject.isModified())) {
             try (FileOutputStream persistStream =
-                    new FileOutputStream(this.args.dmPersistenceFile)) {
+                         new FileOutputStream(this.args.dmPersistenceFile)) {
                 this.securityObject.persist(persistStream);
                 this.serverObject.persist(persistStream);
             } catch (Exception e) {
@@ -214,7 +217,7 @@ public final class DemoClient implements Runnable {
         }
         if (this.args.attributeStoragePersistenceFile != null && this.attrStorage.isModified()) {
             try (FileOutputStream persistStream =
-                    new FileOutputStream(this.args.attributeStoragePersistenceFile)) {
+                         new FileOutputStream(this.args.attributeStoragePersistenceFile)) {
                 this.attrStorage.persist(persistStream);
             } catch (Exception e) {
                 Logger.getAnonymousLogger()
@@ -230,7 +233,7 @@ public final class DemoClient implements Runnable {
                 new Thread(
                         () -> {
                             try (BufferedReader reader =
-                                    new BufferedReader(new InputStreamReader(System.in))) {
+                                         new BufferedReader(new InputStreamReader(System.in))) {
                                 String line;
                                 while ((line = reader.readLine()) != null) {
                                     demoCommands.schedule(line);
@@ -251,6 +254,23 @@ public final class DemoClient implements Runnable {
             this.demoCommands = new DemoCommands(anjay);
             DemoObject demoObject = new DemoObject();
             anjay.registerObject(demoObject);
+            AirQuality airQuality = new AirQuality();
+            anjay.registerObject(airQuality);
+            Temperature temperature = new Temperature();
+            temperature.setUnit("Cel");
+            anjay.registerObject(temperature);
+            int temp = (int)(Math.random() * 10);
+
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                Date now = new Date();
+                Calendar calendar = GregorianCalendar.getInstance();
+                calendar.setTime(now);
+                int hour = calendar.get(Calendar.HOUR);
+                airQuality.setPm10(hour * 10 + (float)Math.random() * 10);
+                airQuality.setPm25(hour * 10  + (float)Math.random() * 10);
+                temperature.setTemp(temp + ((float)Math.random()));
+            }, 1, 1, TimeUnit.SECONDS);
 
             try {
                 this.maybeRestoreState();
@@ -274,7 +294,7 @@ public final class DemoClient implements Runnable {
 
             try (Selector selector = Selector.open()) {
                 final long maxWaitMs = 1000L;
-                while (!shouldTerminate.get()) {
+                while (true) {
                     this.demoCommands.executeAll();
                     List<SelectableChannel> sockets = anjay.getSockets();
 
@@ -298,7 +318,7 @@ public final class DemoClient implements Runnable {
                         selector.select(waitTimeMs);
                     }
                     for (Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-                            it.hasNext(); ) {
+                         it.hasNext(); ) {
                         anjay.serve(it.next().channel());
                         it.remove();
                     }
