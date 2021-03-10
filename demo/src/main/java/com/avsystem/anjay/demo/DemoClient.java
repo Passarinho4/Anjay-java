@@ -16,20 +16,18 @@
 
 package com.avsystem.anjay.demo;
 
-import com.avsystem.anjay.Anjay;
-import com.avsystem.anjay.AnjayAttrStorage;
-import com.avsystem.anjay.AnjayAttributes;
-import com.avsystem.anjay.AnjayFirmwareUpdate;
+import com.avsystem.anjay.*;
 import com.avsystem.anjay.AnjayFirmwareUpdate.InitialState;
 import com.avsystem.anjay.AnjayFirmwareUpdate.Result;
-import com.avsystem.anjay.AnjayFirmwareUpdateException;
-import com.avsystem.anjay.AnjayFirmwareUpdateHandlers;
-import com.avsystem.anjay.AnjaySecurityConfig;
-import com.avsystem.anjay.AnjaySecurityInfoCert;
-import com.avsystem.anjay.AnjaySecurityObject;
-import com.avsystem.anjay.AnjayServerObject;
-import com.avsystem.anjay.demo.resources.AirQuality;
-import com.avsystem.anjay.demo.resources.Temperature;
+import com.avsystem.anjay.demo.resources.airQuality.AirQuality;
+import com.avsystem.anjay.demo.resources.airQuality.AirQualityUpdater;
+import com.avsystem.anjay.demo.resources.device.Device;
+import com.avsystem.anjay.demo.resources.temperature.Temperature;
+import com.avsystem.anjay.demo.resources.temperature.TemperatureUpdater;
+import com.avsystem.anjay.demo.services.Location;
+import com.avsystem.anjay.demo.services.OpenWeatherMapService;
+import com.avsystem.anjay.demo.services.SensorLocationService;
+import com.avsystem.anjay.demo.services.WeatherAndQualityService;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +58,21 @@ public final class DemoClient implements Runnable {
     private AnjayServerObject serverObject;
     private AnjayAttrStorage attrStorage;
     private DemoCommands demoCommands;
+
+    private final ScheduledExecutorService updateExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    private final Location location = SensorLocationService.getLocation();
+    private final WeatherAndQualityService service = new OpenWeatherMapService(
+            System.getenv("OPEN_WEATHER_API_TOKEN"),
+            location.getLat().doubleValue(),
+            location.getLon().doubleValue());
+
+    private final List<ObjectManager<?>> objectManagers = List.of(
+            new ObjectManager<>(new AirQuality(), new AirQualityUpdater(service)),
+            new ObjectManager<>(new Temperature(), new TemperatureUpdater(service)),
+            new ObjectManager<>(new Device(System.getenv("DEVICEID") + "-" + location.getCity())),
+            new ObjectManager<>(new com.avsystem.anjay.demo.resources.location.Location(location.getLat(), location.getLon()))
+    );
 
     class FirmwareUpdateHandlers implements AnjayFirmwareUpdateHandlers {
         private File file;
@@ -254,23 +267,17 @@ public final class DemoClient implements Runnable {
             this.demoCommands = new DemoCommands(anjay);
             DemoObject demoObject = new DemoObject();
             anjay.registerObject(demoObject);
-            AirQuality airQuality = new AirQuality();
-            anjay.registerObject(airQuality);
-            Temperature temperature = new Temperature();
-            temperature.setUnit("Cel");
-            anjay.registerObject(temperature);
-            int temp = (int)(Math.random() * 10);
 
-            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-            scheduledExecutorService.scheduleAtFixedRate(() -> {
-                Date now = new Date();
-                Calendar calendar = GregorianCalendar.getInstance();
-                calendar.setTime(now);
-                int hour = calendar.get(Calendar.HOUR);
-                airQuality.setPm10(hour * 10 + (float)Math.random() * 10);
-                airQuality.setPm25(hour * 10  + (float)Math.random() * 10);
-                temperature.setTemp(temp + ((float)Math.random()));
-            }, 1, 1, TimeUnit.SECONDS);
+            for (ObjectManager<?> manager : objectManagers) {
+                anjay.registerObject(manager.getObject());
+                this.updateExecutor.scheduleAtFixedRate(() -> {
+                    try {
+                        manager.updateObject();
+                    } catch (Exception e) {
+                        Logger.getAnonymousLogger().log(Level.INFO, "Exception during updating object " + manager.getObject().oid(), e);
+                    }
+                }, 1, 1, TimeUnit.SECONDS);
+            }
 
             try {
                 this.maybeRestoreState();
