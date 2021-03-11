@@ -18,3 +18,5 @@ rootProject.name = 'anjay-java'
 include 'library'
 include 'demo'
 include 'testing'
+include 'air-quality-meter'
+

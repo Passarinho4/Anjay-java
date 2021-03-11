@@ -8,7 +8,7 @@ RUN apt-get -y install python3.7
 
 COPY .  .
 RUN git submodule update --init
-RUN ./gradlew :demo:build
+RUN ./gradlew :air-quality-meter:build
 
 
 FROM openjdk:11

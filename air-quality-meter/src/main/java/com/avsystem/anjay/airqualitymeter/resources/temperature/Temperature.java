@@ -1,4 +1,4 @@
-package com.avsystem.anjay.demo.resources.temperature;
+package com.avsystem.anjay.airqualitymeter.resources.temperature;
 
 import com.avsystem.anjay.AnjayObject;
 import com.avsystem.anjay.AnjayOutputContext;

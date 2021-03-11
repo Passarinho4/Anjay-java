@@ -1,4 +1,4 @@
-package com.avsystem.anjay.demo.services;
+package com.avsystem.anjay.airqualitymeter.services;
 
 public class WeatherAndQualityData {
 

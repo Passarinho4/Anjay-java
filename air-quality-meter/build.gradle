@@ -17,8 +17,8 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.sherter.google-java-format' version '0.9'
 }
+
 
 repositories {
     jcenter()
@@ -28,24 +28,22 @@ dependencies {
     compile project(':library')
     compile group: 'com.beust', name: 'jcommander', version: '1.80'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    compile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
 }
 
 application {
-    mainClassName = 'com.avsystem.anjay.demo.Test'
+    mainClassName = 'com.avsystem.anjay.airqualitymeter.Launcher'
 }
 
 jar {
     dependsOn ':library:jar'
 
     manifest {
-        attributes 'Main-Class': 'com.avsystem.anjay.demo.Test'
+        attributes 'Main-Class': 'com.avsystem.anjay.airqualitymeter.Launcher'
     }
 
     from {
         configurations.runtime.collect { zipTree(it) }
     }
-}
-
-googleJavaFormat {
-    options style: 'AOSP'
 }

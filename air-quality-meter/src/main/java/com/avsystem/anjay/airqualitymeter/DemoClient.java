@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-package com.avsystem.anjay.demo;
+package com.avsystem.anjay.airqualitymeter;
 
-import com.avsystem.anjay.Anjay;
-import com.avsystem.anjay.AnjayAttrStorage;
-import com.avsystem.anjay.AnjayAttributes;
-import com.avsystem.anjay.AnjayFirmwareUpdate;
+import com.avsystem.anjay.*;
 import com.avsystem.anjay.AnjayFirmwareUpdate.InitialState;
 import com.avsystem.anjay.AnjayFirmwareUpdate.Result;
-import com.avsystem.anjay.AnjayFirmwareUpdateException;
-import com.avsystem.anjay.AnjayFirmwareUpdateHandlers;
-import com.avsystem.anjay.AnjaySecurityConfig;
-import com.avsystem.anjay.AnjaySecurityInfoCert;
-import com.avsystem.anjay.AnjaySecurityObject;
-import com.avsystem.anjay.AnjayServerObject;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import com.avsystem.anjay.airqualitymeter.resources.airquality.AirQuality;
+import com.avsystem.anjay.airqualitymeter.resources.airquality.AirQualityUpdater;
+import com.avsystem.anjay.airqualitymeter.resources.device.Device;
+import com.avsystem.anjay.airqualitymeter.resources.temperature.Temperature;
+import com.avsystem.anjay.airqualitymeter.resources.temperature.TemperatureUpdater;
+import com.avsystem.anjay.airqualitymeter.services.Location;
+import com.avsystem.anjay.airqualitymeter.services.OpenWeatherMapService;
+import com.avsystem.anjay.airqualitymeter.services.SensorLocationService;
+import com.avsystem.anjay.airqualitymeter.services.WeatherAndQualityService;
+
+import java.io.*;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -46,6 +41,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +55,21 @@ public final class DemoClient implements Runnable {
     private AnjayServerObject serverObject;
     private AnjayAttrStorage attrStorage;
     private DemoCommands demoCommands;
+
+    private final ScheduledExecutorService updateExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    private final Location location = SensorLocationService.getLocation();
+    private final WeatherAndQualityService service = new OpenWeatherMapService(
+            System.getenv("OPEN_WEATHER_API_TOKEN"),
+            location.getLat().doubleValue(),
+            location.getLon().doubleValue());
+
+    private final List<ObjectManager<?>> objectManagers = List.of(
+            new ObjectManager<>(new AirQuality(), new AirQualityUpdater(service)),
+            new ObjectManager<>(new Temperature(), new TemperatureUpdater(service)),
+            new ObjectManager<>(new Device(System.getenv("DEVICEID") + "-" + location.getCity())),
+            new ObjectManager<>(new com.avsystem.anjay.airqualitymeter.resources.location.Location(location.getLat(), location.getLon()))
+    );
 
     class FirmwareUpdateHandlers implements AnjayFirmwareUpdateHandlers {
         private File file;
@@ -252,6 +265,17 @@ public final class DemoClient implements Runnable {
             DemoObject demoObject = new DemoObject();
             anjay.registerObject(demoObject);
 
+            for (ObjectManager<?> manager : objectManagers) {
+                anjay.registerObject(manager.getObject());
+                this.updateExecutor.scheduleAtFixedRate(() -> {
+                    try {
+                        manager.updateObject();
+                    } catch (Exception e) {
+                        Logger.getAnonymousLogger().log(Level.INFO, "Exception during updating object " + manager.getObject().oid(), e);
+                    }
+                }, 1, 1, TimeUnit.SECONDS);
+            }
+
             try {
                 this.maybeRestoreState();
             } catch (Exception e) {
@@ -274,7 +298,7 @@ public final class DemoClient implements Runnable {
 
             try (Selector selector = Selector.open()) {
                 final long maxWaitMs = 1000L;
-                while (!shouldTerminate.get()) {
+                while (true) {
                     this.demoCommands.executeAll();
                     List<SelectableChannel> sockets = anjay.getSockets();
 

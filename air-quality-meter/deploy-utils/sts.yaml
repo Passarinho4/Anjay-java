@@ -1,10 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: airquality
   labels:
     role: airquality
 spec:
+  serviceName: airquality
   replicas: 1
   selector:
     matchLabels:
@@ -28,7 +29,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: SERVER_ADDRESS
-              #value: "xx"
-              value: "xx"
+              #value: "cdm-testmaster.avsystem.com"
+              value: "xxx"
             - name: OPEN_WEATHER_API_TOKEN
-              value: "xx"
+              value: "xxx"

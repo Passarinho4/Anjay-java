@@ -1,4 +1,4 @@
-package com.avsystem.anjay.demo.resources.location;
+package com.avsystem.anjay.airqualitymeter.resources.location;
 
 import com.avsystem.anjay.AnjayObject;
 import com.avsystem.anjay.AnjayOutputContext;

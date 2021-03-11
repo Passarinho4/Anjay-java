@@ -1,8 +1,8 @@
-package com.avsystem.anjay.demo.resources.airQuality;
+package com.avsystem.anjay.airqualitymeter.resources.airquality;
 
-import com.avsystem.anjay.demo.services.RandomizerService;
-import com.avsystem.anjay.demo.services.WeatherAndQualityData;
-import com.avsystem.anjay.demo.services.WeatherAndQualityService;
+import com.avsystem.anjay.airqualitymeter.services.RandomizerService;
+import com.avsystem.anjay.airqualitymeter.services.WeatherAndQualityData;
+import com.avsystem.anjay.airqualitymeter.services.WeatherAndQualityService;
 
 import java.util.function.Consumer;
 
