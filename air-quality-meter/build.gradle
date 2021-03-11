@@ -36,6 +36,14 @@ application {
     mainClassName = 'com.avsystem.anjay.airqualitymeter.Launcher'
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources"
+        }
+    }
+}
+
 jar {
     dependsOn ':library:jar'
 

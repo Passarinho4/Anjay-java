@@ -17,8 +17,7 @@ RUN apt-get update
 RUN apt-get -y install git build-essential cmake libmbedtls-dev zlib1g-dev
 RUN apt-get -y install python3.7
 COPY --from=builder /app .
-COPY run.sh .
-COPY cities.csv .
+COPY air-quality-meter/deploy-utils/run.sh .
 RUN chmod 777 run.sh
 RUN ls
 CMD ["./run.sh"]

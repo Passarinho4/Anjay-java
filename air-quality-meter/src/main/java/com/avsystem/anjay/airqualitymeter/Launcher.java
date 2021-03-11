@@ -23,7 +23,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Test {
+public class Launcher {
     public static void main(String argv[]) throws Exception {
         // NOTE: for some reason Logger.getLogger("") returns more "global"
         // loger than Logger.getGlobal() is.

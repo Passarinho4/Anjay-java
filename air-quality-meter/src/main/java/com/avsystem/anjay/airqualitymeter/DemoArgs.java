@@ -95,18 +95,6 @@ public class DemoArgs {
     public String endpointName = "anjay-jni";
 
     @Parameter(
-            names = "--dm-persistence-file",
-            description =
-                    "File to load Server, Security and Access Control object contents at startup, and store it at shutdown")
-    public String dmPersistenceFile = null;
-
-    @Parameter(
-            names = "--attribute-storage-persistence-file",
-            description =
-                    "File to load attribute storage data from at startup, and store it at shutdown")
-    public String attributeStoragePersistenceFile = null;
-
-    @Parameter(
             names = {"-l", "--lifetime"},
             description = "registration lifetime in seconds")
     public Integer lifetime = 86400;
@@ -122,12 +110,6 @@ public class DemoArgs {
             description = "Highest version of LwM2M Enabler to allow",
             converter = Lwm2mVersionConverter.class)
     public Lwm2mVersion maximumVersion = Lwm2mVersion.VERSION_1_1;
-
-    @Parameter(
-            names = {"--fw-cert-file"},
-            description =
-                    "Require certificate validation against specified file when downloading firmware over encrypted channels")
-    public String fwCertFile = null;
 
     @Parameter(
             names = {"-h", "--help"},
