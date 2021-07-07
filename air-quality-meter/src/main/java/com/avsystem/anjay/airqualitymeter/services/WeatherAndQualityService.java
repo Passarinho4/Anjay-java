@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.avsystem.anjay.airqualitymeter.services;
 
-rootProject.name = 'anjay-java'
-include 'library'
-include 'demo'
-include 'testing'
-include 'air-quality-meter'
-
+public interface WeatherAndQualityService {
+    WeatherAndQualityData getData();
+}

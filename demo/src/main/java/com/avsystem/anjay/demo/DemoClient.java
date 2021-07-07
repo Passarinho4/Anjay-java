@@ -190,7 +190,7 @@ public final class DemoClient implements Runnable {
 
         if (this.args.attributeStoragePersistenceFile != null) {
             try (FileInputStream restoreStream =
-                    new FileInputStream(this.args.attributeStoragePersistenceFile)) {
+                         new FileInputStream(this.args.attributeStoragePersistenceFile)) {
                 this.attrStorage.restore(restoreStream);
             } catch (Exception e) {
                 Logger.getAnonymousLogger()
@@ -204,7 +204,7 @@ public final class DemoClient implements Runnable {
         if (this.args.dmPersistenceFile != null
                 && (this.securityObject.isModified() || this.serverObject.isModified())) {
             try (FileOutputStream persistStream =
-                    new FileOutputStream(this.args.dmPersistenceFile)) {
+                         new FileOutputStream(this.args.dmPersistenceFile)) {
                 this.securityObject.persist(persistStream);
                 this.serverObject.persist(persistStream);
             } catch (Exception e) {
@@ -214,7 +214,7 @@ public final class DemoClient implements Runnable {
         }
         if (this.args.attributeStoragePersistenceFile != null && this.attrStorage.isModified()) {
             try (FileOutputStream persistStream =
-                    new FileOutputStream(this.args.attributeStoragePersistenceFile)) {
+                         new FileOutputStream(this.args.attributeStoragePersistenceFile)) {
                 this.attrStorage.persist(persistStream);
             } catch (Exception e) {
                 Logger.getAnonymousLogger()
@@ -230,7 +230,7 @@ public final class DemoClient implements Runnable {
                 new Thread(
                         () -> {
                             try (BufferedReader reader =
-                                    new BufferedReader(new InputStreamReader(System.in))) {
+                                         new BufferedReader(new InputStreamReader(System.in))) {
                                 String line;
                                 while ((line = reader.readLine()) != null) {
                                     demoCommands.schedule(line);
@@ -298,7 +298,7 @@ public final class DemoClient implements Runnable {
                         selector.select(waitTimeMs);
                     }
                     for (Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-                            it.hasNext(); ) {
+                         it.hasNext(); ) {
                         anjay.serve(it.next().channel());
                         it.remove();
                     }

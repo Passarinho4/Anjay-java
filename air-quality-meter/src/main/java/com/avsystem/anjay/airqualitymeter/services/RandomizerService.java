@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.avsystem.anjay.airqualitymeter.services;
 
-rootProject.name = 'anjay-java'
-include 'library'
-include 'demo'
-include 'testing'
-include 'air-quality-meter'
+public class RandomizerService {
 
+    public static WeatherAndQualityData randomize(WeatherAndQualityData data) {
+        float tempRandomModifier = (float) (Math.random() * 2);
+        float pm10RandomModifier = (float) (Math.random() * 5);
+        float pm25RandomModifier = (float) (Math.random() * 5);
+        return new WeatherAndQualityData(data.getTemperatureInCel() + tempRandomModifier,
+                data.getPm10() + pm10RandomModifier, data.getPm25() + pm25RandomModifier);
+    }
+
+}

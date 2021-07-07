@@ -276,9 +276,9 @@ public:
     template <typename T>
     void set_value(const char *field_name, const T &value) {
         if constexpr (std::is_same<T, int32_t>::value) {
-            set_impl<jni::jint>(field_name, value);
+            set_impl<jni::jint>(field_name, static_cast<jni::jint>(value));
         } else if constexpr (std::is_same<T, int64_t>::value) {
-            set_impl<jni::jlong>(field_name, value);
+            set_impl<jni::jlong>(field_name, static_cast<jni::jlong>(value));
         } else if constexpr (std::is_same<T, bool>::value) {
             set_impl<jni::jboolean>(field_name,
                                     static_cast<jni::jboolean>(value));

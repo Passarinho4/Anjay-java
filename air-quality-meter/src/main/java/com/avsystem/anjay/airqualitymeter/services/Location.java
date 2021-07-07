@@ -13,10 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.avsystem.anjay.airqualitymeter.services;
 
-rootProject.name = 'anjay-java'
-include 'library'
-include 'demo'
-include 'testing'
-include 'air-quality-meter'
+public class Location {
+    private final Float lat;
+    private final Float lon;
+    private final String city;
 
+    public Location(Float lat, Float lon, String city) {
+        this.lat = lat;
+        this.lon = lon;
+        this.city = city;
+    }
+
+    public Float getLat() {
+        return lat;
+    }
+
+    public Float getLon() {
+        return lon;
+    }
+
+    public String getCity() {
+        return city;
+    }
+}
